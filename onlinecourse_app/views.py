@@ -1,6 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-from django.urls import reverse
 from .models import Course, Question, Choice, Submission
 
 def course_list(request):
@@ -27,7 +26,6 @@ def submit(request, course_id):
         user = request.user
         selected_choices = []
 
-        # Recoger todas las opciones seleccionadas
         for key, value in request.POST.items():
             if key.startswith('choice_'):
                 try:
@@ -36,10 +34,8 @@ def submit(request, course_id):
                 except ValueError:
                     pass
 
-        # Crear la Submission
         submission = Submission.objects.create(user=user, course=course, score=0)
 
-        # Añadir las opciones seleccionadas
         for choice_id in selected_choices:
             try:
                 choice = Choice.objects.get(pk=choice_id)
@@ -47,23 +43,18 @@ def submit(request, course_id):
             except Choice.DoesNotExist:
                 pass
 
-        # Calcular el puntaje
         total_points = 0
         user_points = 0
         for question in Question.objects.filter(course=course):
             total_points += question.points
-            # Opciones correctas de la pregunta
-            correct_choices = Choice.objects.filter(question=question, is_correct=True)
-            # Opciones que seleccionó el usuario para esta pregunta
-            user_choices = submission.choices.filter(question=question)
-            # Comparar conjuntos
-            if set(correct_choices.values_list('id', flat=True)) == set(user_choices.values_list('id', flat=True)):
+            question_choices = Choice.objects.filter(question=question, is_correct=True)
+            user_question_choices = submission.choices.filter(question=question)
+            if set(question_choices.values_list('id', flat=True)) == set(user_question_choices.values_list('id', flat=True)):
                 user_points += question.points
 
         submission.score = user_points
         submission.save()
 
-        # Redirigir a show_exam_result con course_id y submission_id
         return redirect('onlinecourse_app:show_exam_result', course_id=course_id, submission_id=submission.id)
 
     return redirect('onlinecourse_app:course_list')
@@ -74,7 +65,6 @@ def show_exam_result(request, course_id, submission_id):
     submission = get_object_or_404(Submission, pk=submission_id, user=request.user)
     questions = Question.objects.filter(course=course)
 
-    # Preparar resultados por pregunta
     results = []
     total_score = 0
     possible_score = 0

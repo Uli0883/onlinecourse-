@@ -44,10 +44,6 @@ class Question(models.Model):
         return self.question_text
 
     def is_get_score(self, selected_choices):
-        """
-        Devuelve los puntos de la pregunta si todas las opciones seleccionadas
-        coinciden con las opciones correctas.
-        """
         correct_choices = self.choice_set.filter(is_correct=True)
         return self.points if set(correct_choices) == set(selected_choices) else 0
 
