@@ -43,6 +43,14 @@ class Question(models.Model):
     def __str__(self):
         return self.question_text
 
+    def is_get_score(self, selected_choices):
+        """
+        Devuelve los puntos de la pregunta si todas las opciones seleccionadas
+        coinciden con las opciones correctas.
+        """
+        correct_choices = self.choice_set.filter(is_correct=True)
+        return self.points if set(correct_choices) == set(selected_choices) else 0
+
 class Choice(models.Model):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     choice_text = models.CharField(max_length=200)
