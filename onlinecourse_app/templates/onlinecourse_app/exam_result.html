@@ -1,0 +1,55 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Resultado del examen</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h1>Resultado del examen - {{ course.name }}</h1>
+
+        {% if passed %}
+        <div class="alert alert-success">
+            <h3>🎉 ¡Felicitaciones!</h3>
+            <p>Has aprobado el examen con una puntuación de <strong>{{ submission.score }}/{{ total_points }}</strong>.</p>
+        </div>
+        {% else %}
+        <div class="alert alert-danger">
+            <h3>No has aprobado</h3>
+            <p>Tu puntuación es <strong>{{ submission.score }}/{{ total_points }}</strong>. Necesitas al menos el 70% para aprobar.</p>
+        </div>
+        {% endif %}
+
+        <h2>Detalles de las preguntas</h2>
+        {% for result in results %}
+        <div class="card mb-2">
+            <div class="card-header">
+                {{ result.question.question_text }}
+                {% if result.is_correct %}
+                <span class="badge bg-success">Correcto (+{{ result.points }} pts)</span>
+                {% else %}
+                <span class="badge bg-danger">Incorrecto (0 pts)</span>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <p><strong>Tu respuesta:</strong>
+                    {% for choice in result.user_choices %}
+                    <span class="badge bg-info">{{ choice.choice_text }}</span>
+                    {% empty %}
+                    <span class="text-muted">No respondiste</span>
+                    {% endfor %}
+                </p>
+                <p><strong>Respuesta correcta:</strong>
+                    {% for choice in result.correct_choices %}
+                    <span class="badge bg-success">{{ choice.choice_text }}</span>
+                    {% endfor %}
+                </p>
+            </div>
+        </div>
+        {% endfor %}
+
+        <a href="{% url 'onlinecourse_app:course_list' %}" class="btn btn-primary">Volver a cursos</a>
+    </div>
+</body>
+</html>
